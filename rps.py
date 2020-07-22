@@ -6,6 +6,7 @@ class RPS:
         self.user_choice: list = []
         self.computer_choice: list = []
         self.option: list = ["rock", "paper", "scissors"]
+        self.is_play: bool = False
 
     def __repr__(self):
         pass
@@ -30,15 +31,26 @@ class RPS:
             print(f"Sorry, but computer chose {self.computer_choice[-1]}")
 
     def play(self, user_choice):
-        self.user_choice_option(user_choice)
-        self.computer_choice_option()
-        self.get_last_game_result()
+        if user_choice == "!exit":
+            self.is_play = False
+            print("Bye!")
+        elif user_choice in self.option:
+            self.user_choice_option(user_choice)
+            self.computer_choice_option()
+            self.get_last_game_result()
+        else:  # incorrect input
+            print("Invalid input")
+
+    def start(self):
+        self.is_play = True
 
 
 def main():
     rock_paper_scissors = RPS()
-    user_inp = input("> ")
-    rock_paper_scissors.play(user_inp)
+    rock_paper_scissors.start()
+    while rock_paper_scissors.is_play:
+        user_inp: str = input("> ")
+        rock_paper_scissors.play(user_inp)
 
 
 if __name__ == "__main__":
