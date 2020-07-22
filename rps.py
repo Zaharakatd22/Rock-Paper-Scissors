@@ -1,7 +1,11 @@
+import random
+
+
 class RPS:
     def __init__(self):
-        self.user_chose: list[str] = []
-        self.computer_chose: list[str] = []
+        self.user_choice: list = []
+        self.computer_choice: list = []
+        self.option: list = ["rock", "paper", "scissors"]
 
     def __repr__(self):
         pass
@@ -9,20 +13,25 @@ class RPS:
     def __str__(self):
         pass
 
-    def user_chosen(self, user_chose):
-        self.user_chose.append(user_chose)
-        if self.user_chose[-1] == "rock":
-            self.computer_chose.append("paper")
-        elif self.user_chose[-1] == "paper":
-            self.computer_chose.append("scissors")
-        else:  # self.user_chose[-1] == "scissors"
-            self.computer_chose.append("rock")
+    def user_choice_option(self, user_choice):
+        self.user_choice.append(user_choice)
+
+    def computer_choice_option(self):
+        self.computer_choice.append(random.choice(self.option))
 
     def get_last_game_result(self):
-        print(f"Sorry, but computer chose {self.computer_chose[-1]}")
+        if self.user_choice[-1] == self.computer_choice[-1]:
+            print(f"There is a draw ({self.computer_choice[-1]})")
+        elif self.user_choice[-1] == "rock" and self.computer_choice[-1] == "scissors" \
+            or self.user_choice[-1] == "scissors" and self.computer_choice[-1] == "paper" \
+                or self.user_choice[-1] == "paper" and self.computer_choice[-1] == "rock":
+            print(f"Well done. Computer chose {self.computer_choice[-1]} and failed")
+        else:  # player lose (inversion of win)
+            print(f"Sorry, but computer chose {self.computer_choice[-1]}")
 
-    def play(self, user_chose):
-        self.user_chosen(user_chose)
+    def play(self, user_choice):
+        self.user_choice_option(user_choice)
+        self.computer_choice_option()
         self.get_last_game_result()
 
 
