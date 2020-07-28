@@ -1,3 +1,5 @@
 Tim 350
 Jane 200
 Alex 400
+Zakhar 200
+Zak 400

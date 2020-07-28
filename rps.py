@@ -11,7 +11,8 @@ class RPS:
         self.is_play: bool = False
         self.user_name: str = ""
         self.user_score: int = 0
-        self.rating_file: TextIO = open("rating.txt", "r", encoding="utf-8")
+        self.reading_rating_file: TextIO = open("rating.txt", "r", encoding="utf-8")
+        self.adding_rating_file: TextIO = open("rating.txt", "a", encoding="utf-8")
         self.game_mode: str = ""
         self.game_rules: dict = {}
         self.game_rules_tmp: list = [{}, []]
@@ -26,7 +27,7 @@ class RPS:
         self.user_score += points
 
     def get_user_point(self):
-        for user in self.rating_file:
+        for user in self.reading_rating_file:
             if self.user_name in user:
                 self.user_score = int(user.split()[1])
                 break
@@ -81,7 +82,10 @@ class RPS:
     def play(self, user_choice: str):
         if user_choice == "!exit":
             self.is_play = False
-            self.rating_file.close()
+            # add new user to rating
+            self.adding_rating_file.write(self.user_name + " " + str(self.user_score) + "\n")
+            self.reading_rating_file.close()
+            self.adding_rating_file.close()
             print("Bye!")
         elif user_choice == "!rating":
             self.get_current_rating()
@@ -121,17 +125,16 @@ def main():
     user_name: str = input("Enter your name: > ")
     print(f"Hello, {user_name}")
     game_mode: str = input("Choose a game mode(user_mode, big_bang_theory_mode, classic_mode) > ")
-    game_option: str = ""
     if game_mode == "user_mode":
-        game_option = input("Please, enter your option (option_1,option_2,option_3,...,option_n): > ")
+        game_option: str = input("Please, enter your option (option_1,option_2,option_3,...,option_n): > ")
     elif game_mode == "big_bang_theory_mode":
-        game_option = "rock,paper,scissors,lizard,spock"
+        game_option: str = "rock,paper,scissors,lizard,spock"
     elif game_mode == "classic_mode" or game_mode == "":
-        game_option = "rock,paper,scissors"
+        game_option: str = "rock,paper,scissors"
         game_mode = "classic_mode"
     else:  # incorrect input
         print("I don't know this game mode, that go play classic mode!!!")
-        game_option = "rock,paper,scissors"
+        game_option: str = "rock,paper,scissors"
         game_mode = "classic_mode"
 
     rock_paper_scissors = RPS()
