@@ -7,11 +7,12 @@ class RPS:
     def __init__(self):
         self.user_choice: list = []
         self.computer_choice: list = []
-        self.option: list = ["rock", "paper", "scissors"]
+        self.option: list = []
         self.is_play: bool = False
         self.user_name: str = ""
         self.user_score: int = 0
         self.rating_file: TextIO = open("rating.txt", "r", encoding="utf-8")
+        self.game_mode: str = ""
         self.game_rules: dict = {}
         self.game_rules_tmp: list = [{}, []]
 
@@ -33,7 +34,7 @@ class RPS:
     def get_current_rating(self):
         print(f"Your rating: {self.user_score}")
 
-    def generate_random_game_rules(self):
+    def generate_user_mode_game_rules(self):
         #  generate basis of game_rules
         for elem in self.option:
             self.game_rules[elem] = list(self.option)
@@ -45,7 +46,7 @@ class RPS:
             min_key: str = min(self.game_rules_tmp[0], key=lambda x: self.game_rules_tmp[0][x])
 
             if self.game_rules_tmp[0][min_key] > (len(self.option) - 1) // 2:
-                for i in range(0, self.game_rules_tmp[0][min_key] // 2):
+                while self.game_rules_tmp[0][min_key] != (len(self.option) - 1) // 2:
                     # generate list with index of option to select
                     self.game_rules_tmp[1] = [i for i in range(0, self.game_rules_tmp[0][min_key])]
                     del_option_index: int = random.choice(self.game_rules_tmp[1])
@@ -91,22 +92,50 @@ class RPS:
         else:  # incorrect input
             print("Invalid input")
 
-    def start(self, user_name: str, game_mode: str):
+    def start(self, user_name: str, game_mode: str, game_option: str):
         self.is_play = True
         self.user_name = user_name
-        self.option = game_mode.split(",")
+        self.game_mode = game_mode
+        self.option = game_option.split(",")
         self.get_user_point()
-        self.generate_random_game_rules()
+        if self.game_mode == "classic_mode":
+            self.game_rules = {
+                "paper": ["rock"],
+                "rock": ["scissors"],
+                "scissors": ["paper"]
+                }
+        elif self.game_mode == "big_bang_theory_mode":
+            self.game_rules = {
+                "rock": ["lizard", "scissors"],
+                "paper": ["rock", "spock"],
+                "scissors": ["paper", "lizard"],
+                "lizard": ["spock", "paper"],
+                "spock": ["scissors", "rock"]
+            }
+        else:
+            self.generate_user_mode_game_rules()
         print("Okay, let's start")
-        print("g", self.game_rules)
 
 
 def main():
-    user_name: str = input("Enter your name: ")
+    user_name: str = input("Enter your name: > ")
     print(f"Hello, {user_name}")
-    game_mode: str = input("> ")
+    game_mode: str = input("Choose a game mode(user_mode, big_bang_theory_mode, classic_mode) > ")
+    game_option: str = ""
+    if game_mode == "user_mode":
+        game_option = input("Please, enter your option (option_1,option_2,option_3,...,option_n): > ")
+    elif game_mode == "big_bang_theory_mode":
+        game_option = "rock,paper,scissors,lizard,spock"
+    elif game_mode == "classic_mode" or game_mode == "":
+        game_option = "rock,paper,scissors"
+        game_mode = "classic_mode"
+    else:  # incorrect input
+        print("I don't know this game mode, that go play classic mode!!!")
+        game_option = "rock,paper,scissors"
+        game_mode = "classic_mode"
+
     rock_paper_scissors = RPS()
-    rock_paper_scissors.start(user_name, game_mode)
+    rock_paper_scissors.start(user_name, game_mode, game_option)
     while rock_paper_scissors.is_play:
         user_inp: str = input("> ")
         rock_paper_scissors.play(user_inp)
