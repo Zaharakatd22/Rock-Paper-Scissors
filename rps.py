@@ -1,4 +1,5 @@
 import random
+import os
 from typing import TextIO
 
 
@@ -11,8 +12,9 @@ class RPS:
         self.is_play: bool = False
         self.user_name: str = ""
         self.user_score: int = 0
+        self.is_new_user: bool = False
         self.reading_rating_file: TextIO = open("rating.txt", "r", encoding="utf-8")
-        self.adding_rating_file: TextIO = open("rating.txt", "a", encoding="utf-8")
+        self.tmp_rating_file: TextIO = open("rating.txt.tmp", "a", encoding="utf-8")
         self.game_mode: str = ""
         self.game_rules: dict = {}
         self.game_rules_tmp: list = [{}, []]
@@ -31,9 +33,30 @@ class RPS:
             if self.user_name in user:
                 self.user_score = int(user.split()[1])
                 break
+            else:
+                self.tmp_rating_file.write(user)
+        else:
+            self.is_new_user = True
 
     def get_current_rating(self):
         print(f"Your rating: {self.user_score}")
+
+    def get_full_current_rating(self):
+        for i, line in enumerate(self.reading_rating_file):
+            if self.user_name in line:
+                print("YOU -> " + str(i + 1) + ":  ", line.strip())
+            else:
+                print(str(i) + ":  ", line.strip())
+
+    def update_rating(self):
+        self.tmp_rating_file.write(self.user_name + " " + str(self.user_score) + "\n")
+        if not self.is_new_user:
+            for user_rating in self.reading_rating_file.readlines():
+                self.tmp_rating_file.write(user_rating)
+        self.reading_rating_file.close()
+        self.tmp_rating_file.close()
+        os.remove("rating.txt")
+        os.rename(r'rating.txt.tmp', r'rating.txt')
 
     def generate_user_mode_game_rules(self):
         #  generate basis of game_rules
@@ -71,9 +94,7 @@ class RPS:
         if self.user_choice[-1] == self.computer_choice[-1]:
             print(f"There is a draw ({self.computer_choice[-1]})")
             self.add_user_points(50)
-        elif self.user_choice[-1] == "rock" and self.computer_choice[-1] == "scissors" \
-                or self.user_choice[-1] == "scissors" and self.computer_choice[-1] == "paper" \
-                or self.user_choice[-1] == "paper" and self.computer_choice[-1] == "rock":
+        elif self.computer_choice[-1] in self.game_rules[self.user_choice[-1]]:
             print(f"Well done. Computer chose {self.computer_choice[-1]} and failed")
             self.add_user_points(100)
         else:  # player lose (inversion of win)
@@ -82,13 +103,12 @@ class RPS:
     def play(self, user_choice: str):
         if user_choice == "!exit":
             self.is_play = False
-            # add new user to rating
-            self.adding_rating_file.write(self.user_name + " " + str(self.user_score) + "\n")
-            self.reading_rating_file.close()
-            self.adding_rating_file.close()
+            self.update_rating()
             print("Bye!")
         elif user_choice == "!rating":
             self.get_current_rating()
+        elif user_choice == "!full_rating":
+            self.get_full_current_rating()
         elif user_choice in self.option:
             self.user_choice_option(user_choice)
             self.computer_choice_option()
@@ -118,6 +138,7 @@ class RPS:
             }
         else:
             self.generate_user_mode_game_rules()
+            print(self.game_rules)
         print("Okay, let's start")
 
 
