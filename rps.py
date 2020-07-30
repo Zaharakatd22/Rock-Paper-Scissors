@@ -1,5 +1,4 @@
 import random
-import os
 from typing import TextIO
 
 
@@ -13,8 +12,8 @@ class RPS:
         self.user_name: str = ""
         self.user_score: int = 0
         self.is_new_user: bool = False
-        self.reading_rating_file: TextIO = open("rating.txt", "r", encoding="utf-8")
-        self.tmp_rating_file: TextIO = open("rating.txt.tmp", "a", encoding="utf-8")
+        self.rating_file: TextIO = open("rating.txt", "r+", encoding="utf-8")
+        self.local_rating: dict = {}
         self.game_mode: str = ""
         self.game_rules: dict = {}
         self.game_rules_tmp: list = [{}, []]
@@ -29,34 +28,45 @@ class RPS:
         self.user_score += points
 
     def get_user_point(self):
-        for user in self.reading_rating_file:
-            if self.user_name in user:
-                self.user_score = int(user.split()[1])
+        for user_rating in self.rating_file:
+            user, score = user_rating.strip().split()
+            self.local_rating[user] = int(score)
+            if self.user_name == user:
+                self.user_score = int(score)
                 break
-            else:
-                self.tmp_rating_file.write(user)
         else:
             self.is_new_user = True
+
+        for user_rating in self.rating_file:
+            user, score = user_rating.strip().split()
+            self.local_rating[user] = int(score)
 
     def get_current_rating(self):
         print(f"Your rating: {self.user_score}")
 
     def get_full_current_rating(self):
-        for i, line in enumerate(self.reading_rating_file):
-            if self.user_name in line:
-                print("YOU -> " + str(i + 1) + ":  ", line.strip())
+        self.update_local_rating()
+        for i, user_info in enumerate(self.sort_local_rating(self.local_rating)):
+            if self.user_name == user_info[0]:
+                print("YOU -> " + str(i + 1) + ":  ", user_info[0], user_info[1])
             else:
-                print(str(i) + ":  ", line.strip())
+                print(str(i + 1) + ":  ", user_info[0], user_info[1])
 
-    def update_rating(self):
-        self.tmp_rating_file.write(self.user_name + " " + str(self.user_score) + "\n")
-        if not self.is_new_user:
-            for user_rating in self.reading_rating_file.readlines():
-                self.tmp_rating_file.write(user_rating)
-        self.reading_rating_file.close()
-        self.tmp_rating_file.close()
-        os.remove("rating.txt")
-        os.rename(r'rating.txt.tmp', r'rating.txt')
+    def update_local_rating(self):
+        self.local_rating[self.user_name] = self.user_score
+
+    @staticmethod
+    def sort_local_rating(l_rating) -> list:
+        local_rating_list: list = list(l_rating.items())
+        local_rating_list.sort(key=lambda x: x[1], reverse=True)
+
+        return local_rating_list
+
+    def update_file_rating(self):
+        self.update_local_rating()
+        self.rating_file.truncate(0)
+        for user, score in self.sort_local_rating(self.local_rating):
+            self.rating_file.write(user + " " + str(score) + "\n")
 
     def generate_user_mode_game_rules(self):
         #  generate basis of game_rules
@@ -103,7 +113,8 @@ class RPS:
     def play(self, user_choice: str):
         if user_choice == "!exit":
             self.is_play = False
-            self.update_rating()
+            self.update_file_rating()
+            self.rating_file.close()
             print("Bye!")
         elif user_choice == "!rating":
             self.get_current_rating()
